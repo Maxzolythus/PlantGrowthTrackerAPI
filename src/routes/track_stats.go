@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"log/slog"
 	"main/src/types"
 	"main/src/utils"
@@ -33,7 +34,10 @@ func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// sucesss
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Sucessfully added Stats"})
+	err = json.NewEncoder(w).Encode(map[string]string{"message": "Sucessfully added Stats"})
+	if err != nil {
+		log.Fatalf("Encoding Error: %s", err)
+	}
 }
 
 func trackStats(mongoClient *mongo.Client, stat types.DataPoint) error {
