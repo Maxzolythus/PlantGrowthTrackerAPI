@@ -2,7 +2,7 @@ package routes
 
 import (
 	"encoding/json"
-	"log/slog"
+	"log"
 	"main/src/types"
 	"main/src/utils"
 	"net/http"
@@ -22,14 +22,15 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	dataPoints, err := getStats(mongoClient)
 	if err != nil {
-		slog.Error("GetStats Error: " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "GetStats Error: " + err.Error()})
+		SendError(w, http.StatusInternalServerError, "GetStats Error: Unable to retrieve stats", err)
 	}
 
 	// sucesss
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string][]types.DataPoint{"message": dataPoints})
+	err = json.NewEncoder(w).Encode(map[string][]types.DataPoint{"message": dataPoints})
+	if err != nil {
+		log.Fatalf("Encoding Error: %s", err)
+	}
 }
 
 func getStats(mongo *mongo.Client) ([]types.DataPoint, error) {

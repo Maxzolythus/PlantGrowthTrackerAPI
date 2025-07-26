@@ -18,9 +18,7 @@ func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
 	var stat types.DataPoint
 	err := json.NewDecoder(r.Body).Decode(&stat)
 	if err != nil {
-		slog.Error("TrackStats Error: " + err.Error())
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"message": "TrackStats Error: " + err.Error()})
+		SendError(w, http.StatusBadRequest, "TrackStats Error: Unable to parse request", err)
 	}
 
 	stat = utils.FormatStats(stat)
@@ -30,9 +28,7 @@ func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	err = trackStats(mongoClient, stat)
 	if err != nil {
-		slog.Error("TrackStats Error: " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"message": "TrackStats Error: " + err.Error()})
+		SendError(w, http.StatusInternalServerError, "TrackStats Error: Unable to add stats to table", err)
 	}
 
 	// sucesss
