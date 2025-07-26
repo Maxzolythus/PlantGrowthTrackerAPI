@@ -4,6 +4,6 @@ import (
 	"main/src/types"
 )
 
-func FormatStats() types.DataPoint {
+func FormatStats(stat types.DataPoint) types.DataPoint {
 	return types.DataPoint{}
 }
