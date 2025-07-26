@@ -15,6 +15,9 @@ import (
 
 // TrackStatsHandler adds provided data to the DB
 func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
+	response := types.SuccessResp{
+		Message: "Sucessfully added Stats",
+	}
 	// get the values from the body
 	var stat types.DataPoint
 	err := json.NewDecoder(r.Body).Decode(&stat)
@@ -34,7 +37,7 @@ func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
 
 	// sucesss
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(map[string]string{"message": "Sucessfully added Stats"})
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		log.Fatalf("Encoding Error: %s", err)
 	}

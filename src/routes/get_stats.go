@@ -12,6 +12,9 @@ import (
 
 // GetStatsHandler queries the DB for data points
 func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
+	response := types.SuccessResp{
+		Message: "Successfully Retrieved Data",
+	}
 	// get the values from the query
 
 	// escape string
@@ -25,9 +28,11 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 		SendError(w, http.StatusInternalServerError, "GetStats Error: Unable to retrieve stats", err)
 	}
 
+	response.Data = dataPoints
+
 	// sucesss
 	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(map[string][]types.DataPoint{"message": dataPoints})
+	err = json.NewEncoder(w).Encode(response)
 	if err != nil {
 		log.Fatalf("Encoding Error: %s", err)
 	}
