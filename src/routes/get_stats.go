@@ -23,7 +23,7 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	dataPoints, err := getStats(mongoClient)
 	if err != nil {
 		slog.Error("GetStats Error: " + err.Error())
-		w.WriteHeader(http.StatusOK)
+		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(map[string]string{"message": "GetStats Error: " + err.Error()})
 	}
 
