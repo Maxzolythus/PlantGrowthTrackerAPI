@@ -3,6 +3,7 @@ package routes
 import (
 	"context"
 	"encoding/json"
+	"log"
 	"main/src/utils"
 	"net/http"
 
@@ -24,5 +25,8 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
-	json.NewEncoder(w).Encode(map[string]bool{"mongoHealth": mongoHealth})
+	err = json.NewEncoder(w).Encode(map[string]bool{"mongoHealth": mongoHealth})
+	if err != nil {
+		log.Fatalf("Encoding Error: %s", err)
+	}
 }
