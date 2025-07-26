@@ -10,10 +10,16 @@ package routes
 
 // Test Happy Path 5 - Only Temp
 
+// Test Happy Path 5 - Only Timestamp
+
+// Test Happy Path 5 - Timestamp Range
+
 // Test Happy Path - Only ph
 
 // Test Sad Path 1 - Wrong Type
 
 // Test Sad Path 2 - All nil
+
+// Test Sad Path 3 - Maliscious Text
 
 // Test Route
