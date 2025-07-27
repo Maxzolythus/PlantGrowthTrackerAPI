@@ -6,8 +6,6 @@ import (
 	"main/src/types"
 	"main/src/utils"
 	"net/http"
-
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // GetStatsHandler queries the DB for data points
@@ -21,7 +19,7 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	//html.EscapeString()
 
 	// access mongo or w/e and shove it in
-	mongoClient := utils.SetupMongoClient(nil)
+	mongoClient := utils.NewMongoClient()
 
 	dataPoints, err := getStats(mongoClient)
 	if err != nil {
@@ -38,6 +36,6 @@ func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func getStats(mongo *mongo.Client) ([]types.DataPoint, error) {
+func getStats(mongo utils.MongoClient) ([]types.DataPoint, error) {
 	return nil, nil
 }

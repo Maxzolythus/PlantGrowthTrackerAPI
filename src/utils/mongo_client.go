@@ -2,29 +2,31 @@ package utils
 
 import (
 	"context"
-	"fmt"
-	"log"
-	"os"
-
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"log/slog"
+	"main/src/types"
+	"time"
 )
 
-func SetupMongoClient(c *mongo.Client) *mongo.Client {
-	if c != nil {
-		return c
+type MongoClient interface {
+	InsertStat(stat types.DataPoint) error
+	GetStats(query string) ([]types.DataPoint, error)
+}
+
+func (mongo *Mongo) InsertStat(stat types.DataPoint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := mongo.Client.Database("plantTracker").Collection("stats")
+
+	res, err := collection.InsertOne(ctx, stat)
+	if err != nil {
+		return err
 	}
-	ctx := context.Background()
-	addr := os.Getenv("MONGO_URI")
-	port := os.Getenv("MONGO_PORT")
+	id := res.InsertedID
 
-	c, _ = mongo.Connect(options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", addr, port)))
+	slog.Info("Successfully inserted record: %s", id)
+	return nil
+}
 
-	defer func() {
-		if err := c.Disconnect(ctx); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	return c
+func (mongo *Mongo) GetStats(query string) ([]types.DataPoint, error) {
+	return []types.DataPoint{}, nil
 }

@@ -1,25 +1,19 @@
 package routes
 
 import (
-	"context"
 	"encoding/json"
 	"log"
-	"log/slog"
 	"main/src/types"
 	"main/src/utils"
 	"net/http"
-	"time"
 
 	"github.com/go-playground/validator/v10"
-	"go.mongodb.org/mongo-driver/v2/mongo"
 )
 
 // TrackStatsHandler adds provided data to the DB
 func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
-	validate := validator.New(validator.WithRequiredStructEnabled())
-	response := types.SuccessResp{
-		Message: "Sucessfully added Stats",
-	}
+	mongoClient := utils.NewMongoClient()
+
 	// get the values from the body
 	var stat types.DataPoint
 	err := json.NewDecoder(r.Body).Decode(&stat)
@@ -27,39 +21,33 @@ func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
 		SendError(w, http.StatusBadRequest, "TrackStats Error: Unable to parse request", err)
 	}
 
-	err = validate.Struct(stat)
+	statusCode, message, err := trackStats(mongoClient, stat)
 	if err != nil {
-		SendError(w, http.StatusBadRequest, "TrackStats Error: Unable to validate request", err)
-	}
-
-	// access mongo
-	mongoClient := utils.SetupMongoClient(nil)
-
-	err = trackStats(mongoClient, stat)
-	if err != nil {
-		SendError(w, http.StatusInternalServerError, "TrackStats Error: Unable to add stats to table", err)
+		SendError(w, statusCode, message, err)
 	}
 
 	// sucesss
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(response)
+	w.WriteHeader(statusCode)
+	err = json.NewEncoder(w).Encode(types.SuccessResp{
+		Message: message,
+	})
 	if err != nil {
 		log.Fatalf("Encoding Error: %s", err)
 	}
 }
 
-func trackStats(mongoClient *mongo.Client, stat types.DataPoint) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	collection := mongoClient.Database("plantTracker").Collection("stats")
+func trackStats(mongo utils.MongoClient, stat types.DataPoint) (int, string, error) {
+	validate := validator.New(validator.WithRequiredStructEnabled())
 
-	res, err := collection.InsertOne(ctx, stat)
+	err := validate.Struct(stat)
 	if err != nil {
-		return err
+		return http.StatusBadRequest, "TrackStats Error: Unable to validate request", err
 	}
-	id := res.InsertedID
 
-	slog.Info("Successfully inserted record: %s", id)
+	err = mongo.InsertStat(stat)
+	if err != nil {
+		return http.StatusInternalServerError, "TrackStats Error: Unable add stat to database", err
+	}
 
-	return nil
+	return http.StatusOK, "Sucessfully added Stats", nil
 }

@@ -15,9 +15,9 @@ func HealthHandler(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 	statusCode := http.StatusOK
 	mongoHealth := true
-	mongoClient := utils.SetupMongoClient(nil)
+	mongo := utils.NewMongoClient()
 
-	err := mongoClient.Ping(ctx, readpref.Primary())
+	err := mongo.Client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		statusCode = http.StatusInternalServerError
 		mongoHealth = false
