@@ -1,15 +1,32 @@
 package routes
 
 import (
+	"context"
 	"encoding/json"
+	"log"
+	"main/src/utils"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 // HealthHandler displays the health of the application and its dependancies
 func HealthHandler(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	ctx := context.Background()
+	statusCode := http.StatusOK
+	mongoHealth := true
+	mongo := utils.NewMongoClient()
 
-	// TODO: Check the status of our DB and include them in the response.
-	json.NewEncoder(w).Encode(map[string]bool{"ok": true})
+	err := mongo.Client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		statusCode = http.StatusInternalServerError
+		mongoHealth = false
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	err = json.NewEncoder(w).Encode(map[string]bool{"mongoHealth": mongoHealth})
+	if err != nil {
+		log.Fatalf("Encoding Error: %s", err)
+	}
 }
