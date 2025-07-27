@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 	"log/slog"
 	"main/src/types"
@@ -16,7 +17,7 @@ func SendError(w http.ResponseWriter, status int, message string, err error) {
 
 	if err != nil {
 		response.Error = err.Error()
-		slog.Error("%s : %s", response.Message, response.Error)
+		slog.Error(fmt.Sprintf("%s : %s", response.Message, response.Error))
 	} else {
 		slog.Error(response.Message)
 	}
