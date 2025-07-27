@@ -14,7 +14,7 @@ func TestTrackStats(t *testing.T) {
 	// Test Happy Path 1 - All things filled out
 	t.Run("TestTrackStatsAll", func(t *testing.T) {
 		data := types.DataPoint{
-			Timestamp:    time.Now().Format(time.DateTime),
+			Timestamp:    time.Now(),
 			Height:       12.7,
 			SoilMoisture: 57,
 			PH:           4.7,
