@@ -1,0 +1,8 @@
+template: testify
+dir: "mocks/{{.SrcPackageName}}"
+filename: "{{.InterfaceName}}.go"
+packages:
+  main/src/utils:
+    interfaces:
+      MongoClient:
+        config:
