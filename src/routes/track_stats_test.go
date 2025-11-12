@@ -211,12 +211,12 @@ func TestTrackStats(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer body.Close()
 
 		req, err := http.NewRequest("POST", "/stats", body)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer body.Close() //nolint:all
 
 		mockMongo := mockUtils.NewMockMongoClient(t)
 		mockMongo.EXPECT().InsertStat(mock.Anything).Return(nil) // TODO: Test Value
@@ -238,12 +238,12 @@ func TestTrackStats(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer body.Close()
 
 		req, err := http.NewRequest("POST", "/stats", body)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer body.Close() //nolint:all
 
 		mockMongo := mockUtils.NewMockMongoClient(t)
 		mockMongo.EXPECT().InsertStat(mock.Anything).Return(nil) // TODO: Test Value
@@ -286,12 +286,12 @@ func TestTrackStats(t *testing.T) {
 		if err != nil {
 			log.Fatal(err)
 		}
-		defer body.Close()
 
 		req, err := http.NewRequest("POST", "/stats", body)
 		if err != nil {
 			log.Fatal(err)
 		}
+		defer body.Close() //nolint:all
 
 		router.ServeHTTP(respRec, req)
 
