@@ -2,6 +2,7 @@ package routes
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"main/src/types"
 	"main/src/utils"
@@ -11,32 +12,40 @@ import (
 )
 
 // TrackStatsHandler adds provided data to the DB
-func TrackStatsHandler(w http.ResponseWriter, r *http.Request) {
-	mongoClient := utils.NewMongoClient()
+func TrackStatsHandler(mongoClient utils.MongoClient) http.HandlerFunc {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		// get the values from the body
+		var stat types.DataPoint
+		err := json.NewDecoder(r.Body).Decode(&stat)
+		if err != nil {
+			SendError(w, http.StatusBadRequest, "TrackStats Error: Unable to parse request", err)
+			return
+		}
 
-	// get the values from the body
-	var stat types.DataPoint
-	err := json.NewDecoder(r.Body).Decode(&stat)
-	if err != nil {
-		SendError(w, http.StatusBadRequest, "TrackStats Error: Unable to parse request", err)
+		statusCode, message, err := trackStats(mongoClient, stat)
+		if err != nil {
+			SendError(w, statusCode, message, err)
+			return
+		}
+
+		// sucesss
+		w.WriteHeader(statusCode)
+		err = json.NewEncoder(w).Encode(types.SuccessResp{
+			Message: message,
+		})
+		if err != nil {
+			log.Fatalf("Encoding Error: %s", err)
+		}
 	}
 
-	statusCode, message, err := trackStats(mongoClient, stat)
-	if err != nil {
-		SendError(w, statusCode, message, err)
-	}
-
-	// sucesss
-	w.WriteHeader(statusCode)
-	err = json.NewEncoder(w).Encode(types.SuccessResp{
-		Message: message,
-	})
-	if err != nil {
-		log.Fatalf("Encoding Error: %s", err)
-	}
+	return http.HandlerFunc(fn)
 }
 
 func trackStats(mongo utils.MongoClient, stat types.DataPoint) (int, string, error) {
+	if stat.Height == nil && stat.SoilMoisture == nil && stat.PH == nil && stat.Fertilizer == nil && stat.Tempurature == nil {
+		return http.StatusBadRequest, "TrackStats Error", errors.New("no stats to track in body")
+	}
+
 	validate := validator.New(validator.WithRequiredStructEnabled())
 
 	err := validate.Struct(stat)

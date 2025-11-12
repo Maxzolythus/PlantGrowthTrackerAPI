@@ -22,14 +22,15 @@ func main() {
 
 	slog.SetDefault(logger)
 
-	slog.Info("Performing Router Set Up....")
-	r := routes.SetupRouter(nil)
-
+	slog.Info("Connecting to mongo....")
 	mongo := utils.NewMongoClient()
 	err := mongo.Client.Ping(ctx, readpref.Primary())
 	if err != nil {
 		slog.Warn("Mongo Ping Error. Ensure Mongo DB is accessable and healthy.")
 	}
+
+	slog.Info("Performing Router Set Up....")
+	r := routes.SetupRouter(nil, mongo)
 
 	slog.Info("Starting Server....")
 

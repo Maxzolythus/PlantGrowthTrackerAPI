@@ -9,31 +9,31 @@ import (
 )
 
 // GetStatsHandler queries the DB for data points
-func GetStatsHandler(w http.ResponseWriter, r *http.Request) {
-	response := types.SuccessResp{
-		Message: "Successfully Retrieved Data",
+func GetStatsHandler(mongoClient utils.MongoClient) http.HandlerFunc {
+	fn := func(w http.ResponseWriter, r *http.Request) {
+		response := types.SuccessResp{
+			Message: "Successfully Retrieved Data",
+		}
+		// get the values from the query
+
+		// escape string
+		//html.EscapeString()
+
+		dataPoints, err := getStats(mongoClient)
+		if err != nil {
+			SendError(w, http.StatusInternalServerError, "GetStats Error: Unable to retrieve stats", err)
+		}
+
+		response.Data = dataPoints
+
+		// sucesss
+		w.WriteHeader(http.StatusOK)
+		err = json.NewEncoder(w).Encode(response)
+		if err != nil {
+			log.Fatalf("Encoding Error: %s", err)
+		}
 	}
-	// get the values from the query
-
-	// escape string
-	//html.EscapeString()
-
-	// access mongo or w/e and shove it in
-	mongoClient := utils.NewMongoClient()
-
-	dataPoints, err := getStats(mongoClient)
-	if err != nil {
-		SendError(w, http.StatusInternalServerError, "GetStats Error: Unable to retrieve stats", err)
-	}
-
-	response.Data = dataPoints
-
-	// sucesss
-	w.WriteHeader(http.StatusOK)
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		log.Fatalf("Encoding Error: %s", err)
-	}
+	return fn
 }
 
 func getStats(mongo utils.MongoClient) ([]types.DataPoint, error) {
