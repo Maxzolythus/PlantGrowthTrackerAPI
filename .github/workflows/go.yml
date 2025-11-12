@@ -27,6 +27,9 @@ jobs:
     - name: Fmt
       run: go fmt ./...
 
+    - name: Golangci-lint
+      uses: golangci/golangci-lint-action@v8.0.0
+
     - name: Build
       run: go build -v ./...
 

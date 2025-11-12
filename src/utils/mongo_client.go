@@ -1,22 +1,35 @@
 package utils
 
 import (
-	"fmt"
-	"os"
-
-	"go.mongodb.org/mongo-driver/v2/mongo"
-	"go.mongodb.org/mongo-driver/v2/mongo/options"
+	"context"
+	"log/slog"
+	"main/src/types"
+	"time"
 )
 
-func SetupMongoClient(c *mongo.Client) *mongo.Client {
-	if c != nil {
-		return c
+// MongoClient is the interface for Mongo actions that need to be performed
+type MongoClient interface {
+	InsertStat(stat types.DataPoint) error
+	GetStats(query string) ([]types.DataPoint, error)
+}
+
+// InsertStat inserts a single stat into the stats database
+func (mongo *Mongo) InsertStat(stat types.DataPoint) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	collection := mongo.Client.Database("plantTracker").Collection("stats")
+
+	res, err := collection.InsertOne(ctx, stat)
+	if err != nil {
+		return err
 	}
+	id := res.InsertedID
 
-	addr := os.Getenv("MONGO_URI")
-	port := os.Getenv("MONGO_PORT")
+	slog.Info("Successfully inserted record: %s", id)
+	return nil
+}
 
-	c, _ = mongo.Connect(options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", addr, port)))
-
-	return c
+// GetStats returns all stats that match a given query
+func (mongo *Mongo) GetStats(query string) ([]types.DataPoint, error) {
+	return []types.DataPoint{}, nil
 }

@@ -1,31 +1,47 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"log/slog"
 	"main/src/routes"
+	"main/src/utils"
 	"net/http"
 	"os"
 	"time"
+
+	"go.mongodb.org/mongo-driver/v2/mongo/readpref"
 )
 
 func main() {
+	ctx := context.Background()
 	addr := os.Getenv("ADDRESS")
 	port := os.Getenv("PORT")
 	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
 
 	slog.SetDefault(logger)
 
-	r := routes.SetupRouter(nil)
+	slog.Info("Connecting to mongo....")
+	mongo := utils.NewMongoClient()
+	err := mongo.Client.Ping(ctx, readpref.Primary())
+	if err != nil {
+		slog.Warn("Mongo Ping Error. Ensure Mongo DB is accessable and healthy.")
+	}
 
-	// TODO: Check mongo is up before starting
+	slog.Info("Performing Router Set Up....")
+	r := routes.SetupRouter(nil, mongo)
+
+	slog.Info("Starting Server....")
+
 	srv := &http.Server{
 		Handler:      r,
 		Addr:         fmt.Sprintf("%s:%s", addr, port),
 		WriteTimeout: 30 * time.Second,
 		ReadTimeout:  2 * time.Minute,
 	}
+
+	slog.Info("Serving")
 
 	log.Fatal(srv.ListenAndServe())
 }
