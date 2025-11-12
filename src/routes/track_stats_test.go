@@ -118,6 +118,7 @@ func TestTrackStats(t *testing.T) {
 			Tempurature:  &temp,
 		}
 		mockMongo := mockUtils.NewMockMongoClient(t)
+		mockMongo.EXPECT().InsertStat(data).Return(nil)
 		statusCode, _, err := trackStats(mockMongo, data)
 		assert.Equal(t, http.StatusOK, statusCode)
 		assert.NoError(t, err)
